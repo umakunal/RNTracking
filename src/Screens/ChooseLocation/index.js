@@ -4,6 +4,7 @@ import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import AddressPickup from '../../Components/AddressPickup';
 import CustomButton from '../../Components/CustomButton';
 import { useNavigation } from '@react-navigation/native';
+import { showError, showSucess } from '../../Helper/ToastMessage';
 
 // create a component
 const ChooseLocation = (props) => {
@@ -14,11 +15,27 @@ const ChooseLocation = (props) => {
   })
 
   const { destinationCords, pickupCords } = state
+  const checckValid = () => {
+    if (Object.keys(pickupCords).length === 0) {
+      showError('Please select pickup location')
+      return false
+    }
+    if (Object.keys(destinationCords).length === 0) {
+      showError('Please select destination location')
+      return false
+    }
+    return true
+  }
 
   console.log('props', props)
   const onDone = () => {
-    props.route.params.getCordinates({ pickupCords, destinationCords })
-    navigation.goBack();
+    const isValid = checckValid()
+    console.log('isValid', isValid)
+    if (isValid) {
+      props.route.params.getCordinates({ pickupCords, destinationCords })
+      showSucess('Location selected')
+      navigation.goBack();
+    }
   }
   const fetchAddressCords = (lat, lng) => {
     console.log(" latitude: ", lat);

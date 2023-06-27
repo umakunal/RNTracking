@@ -9,6 +9,11 @@ import CustomButton from '../../Components/CustomButton';
 
 
 // create a component
+
+const screen = Dimensions.get('window');
+const ASPECT_RATIO = screen.width / screen.height;
+const LATITUDE_DELTA = 0.04;
+const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 const Home = ({ navigation }) => {
 
   const [state, setState] = useState(
@@ -16,15 +21,8 @@ const Home = ({ navigation }) => {
       startingCords: {
         latitude: 30.7046,
         longitude: 76.7179,
-        latitudeDelta: 0.0922,
-        longitudeDelta: 0.0421,
       },
-      destinationCords: {
-        latitude: 30.7333,
-        longitude: 76.7794,
-        latitudeDelta: 0.0922,
-        longitudeDelta: 0.0421,
-      },
+      destinationCords: {},
     }
   )
   const mapRef = useRef()
@@ -39,7 +37,7 @@ const Home = ({ navigation }) => {
         latitude: data.pickupCords.latitude,
         longitude: data.pickupCords.longitude,
       },
-      destinationCords:{
+      destinationCords: {
         latitude: data.destinationCords.latitude,
         longitude: data.destinationCords.longitude
       }
@@ -52,22 +50,27 @@ const Home = ({ navigation }) => {
         <MapView
           ref={mapRef}
           style={StyleSheet.absoluteFill}
-          initialRegion={startingCords}>
+          initialRegion={{
+            ...startingCords,
+            latitudeDelta: LATITUDE_DELTA,
+            longitudeDelta: LONGITUDE_DELTA
+          }}>
           <Marker image={ImagePath.isCurLoc} coordinate={startingCords} />
-          <Marker image={ImagePath.isGreenMarker} coordinate={destinationCords} />
-          <MapViewDirections
-            origin={startingCords}
-            destination={destinationCords}
-            apikey={GoogleMapKey}
-            strokeWidth={5}
-            strokeColor="hotpink"
-            optimizeWaypoints
-            onReady={result => {
-              mapRef.current.fitToCoordinates(result.coordinates, {
-                edgePadding: { top: 100, bottom: 300, left: 30, right: 30 },
-              })
-            }}
-          />
+          {Object.keys(destinationCords).length > 0 && <Marker image={ImagePath.isGreenMarker} coordinate={destinationCords} />}
+          {Object.keys(destinationCords).length > 0 &&
+            <MapViewDirections
+              origin={startingCords}
+              destination={destinationCords}
+              apikey={GoogleMapKey}
+              strokeWidth={5}
+              strokeColor="hotpink"
+              optimizeWaypoints
+              onReady={result => {
+                mapRef.current.fitToCoordinates(result.coordinates, {
+                  edgePadding: { top: 100, bottom: 300, left: 30, right: 30 },
+                })
+              }}
+            />}
         </MapView>
       </View>
       <View style={styles.bottomCard}>
