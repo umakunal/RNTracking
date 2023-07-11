@@ -23,7 +23,7 @@ import {
 
 const screen = Dimensions.get('window');
 const ASPECT_RATIO = screen.width / screen.height;
-const LATITUDE_DELTA = 0.9222;
+const LATITUDE_DELTA = 0.04;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 const Home = ({navigation}) => {
   const mapRef = useRef();
@@ -40,8 +40,10 @@ const Home = ({navigation}) => {
       latitudeDelta: LATITUDE_DELTA,
       longitudeDelta: LONGITUDE_DELTA,
     }),
+    time: 0,
+    distance: 0,
   });
-  const {destinationCords, curLoc, coordinates} = state;
+  const {destinationCords, curLoc, coordinates, time, distance} = state;
 
   useEffect(() => {
     getLiveLocation();
@@ -51,7 +53,6 @@ const Home = ({navigation}) => {
     const checkLocationPermission = await locationPermission();
     if (checkLocationPermission === 'granted') {
       const {latitude, longitude} = await getCurrentLocation();
-      console.log('Get live location after every 5 seconds');
       animateMarker(latitude, longitude);
       setState(prevState => ({
         ...prevState,
@@ -70,7 +71,7 @@ const Home = ({navigation}) => {
       getLiveLocation();
     }, 6000);
     return () => clearInterval(interval);
-  }, []);
+  }, [curLoc]);
 
   const onPressLocation = () => {
     navigation.navigate('ChooseLocation', {getCordinates: fetchValues});
@@ -109,8 +110,22 @@ const Home = ({navigation}) => {
       longitudeDelta: LONGITUDE_DELTA,
     });
   };
+  const fetchTime = (distance, time) => {
+    setState(prevState => ({...prevState, distance: distance, time: time}));
+  };
   return (
     <View style={styles.container}>
+      {distance !== 0 && time !== 0 && (
+        <View
+          style={{
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginVertical: 15,
+          }}>
+          <Text>Time left: {time.toFixed(0)}</Text>
+          <Text>Distance left: {distance.toFixed(0)}</Text>
+        </View>
+      )}
       <View style={styles.container}>
         <MapView
           ref={mapRef}
@@ -142,11 +157,14 @@ const Home = ({navigation}) => {
               strokeColor="hotpink"
               optimizeWaypoints={true}
               onStart={params => {
-                console.log(
-                  `Started routing between "${params.origin}" and "${params.destination}"`,
-                );
+                // console.log(
+                //   `Started routing between "${params.origin}" and "${params.destination}"`,
+                // );
               }}
               onReady={result => {
+                fetchTime(result.distance, result.duration);
+                // console.log(`Distance: ${result.distance} km`);
+                // console.log(`Duration: ${result.duration} min`);
                 mapRef.current.fitToCoordinates(result.coordinates, {
                   edgePadding: {
                     // top: 100,
