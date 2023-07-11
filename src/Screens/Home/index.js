@@ -30,20 +30,22 @@ const Home = ({navigation}) => {
   const markerRef = useRef();
   const [state, setState] = useState({
     curLoc: {
-      latitude: 30.7046,
-      longitude: 76.7179,
+      latitude: 26.712,
+      longitude: 88.3991,
     },
     destinationCords: {},
     coordinates: new AnimatedRegion({
-      latitude: 30.7046,
-      longitude: 76.7179,
+      latitude: 26.712,
+      longitude: 88.3991,
       latitudeDelta: LATITUDE_DELTA,
       longitudeDelta: LONGITUDE_DELTA,
     }),
     time: 0,
     distance: 0,
+    heading: 0,
   });
-  const {destinationCords, curLoc, coordinates, time, distance} = state;
+  const {destinationCords, curLoc, coordinates, time, distance, heading} =
+    state;
 
   useEffect(() => {
     getLiveLocation();
@@ -52,10 +54,11 @@ const Home = ({navigation}) => {
   const getLiveLocation = async () => {
     const checkLocationPermission = await locationPermission();
     if (checkLocationPermission === 'granted') {
-      const {latitude, longitude} = await getCurrentLocation();
+      const {latitude, longitude, heading} = await getCurrentLocation();
       animateMarker(latitude, longitude);
       setState(prevState => ({
         ...prevState,
+        heading: heading,
         curLoc: {latitude, longitude},
         coordinates: new AnimatedRegion({
           latitude: latitude,
@@ -135,12 +138,17 @@ const Home = ({navigation}) => {
             latitudeDelta: LATITUDE_DELTA,
             longitudeDelta: LONGITUDE_DELTA,
           }}>
-          <Marker.Animated
-            ref={markerRef}
-            draggable
-            image={ImagePath.isCurLoc}
-            coordinate={coordinates}
-          />
+          <Marker.Animated ref={markerRef} draggable coordinate={coordinates}>
+            <Image
+              source={ImagePath.bike}
+              style={{
+                height: 40,
+                width: 40,
+                resizeMode: 'contain',
+                transform: [{rotate: `${heading}deg`}],
+              }}
+            />
+          </Marker.Animated>
           {Object.keys(destinationCords).length > 0 && (
             <Marker
               draggable
