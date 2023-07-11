@@ -14,12 +14,8 @@ const ChooseLocation = (props) => {
     destinationCords: {},
   })
 
-  const { destinationCords, pickupCords } = state
+  const { destinationCords } = state
   const checckValid = () => {
-    if (Object.keys(pickupCords).length === 0) {
-      showError('Please select pickup location')
-      return false
-    }
     if (Object.keys(destinationCords).length === 0) {
       showError('Please select destination location')
       return false
@@ -32,22 +28,12 @@ const ChooseLocation = (props) => {
     const isValid = checckValid()
     console.log('isValid', isValid)
     if (isValid) {
-      props.route.params.getCordinates({ pickupCords, destinationCords })
+      props.route.params.getCordinates({ destinationCords })
       showSucess('Location selected')
       navigation.goBack();
     }
   }
-  const fetchAddressCords = (lat, lng) => {
-    console.log(" latitude: ", lat);
-    console.log(" longitude: ", lng);
-    setState({
-      ...state,
-      pickupCords: {
-        latitude: lat,
-        longitude: lng,
-      },
-    })
-  }
+
   const fetchDestinationCords = (lat, lng) => {
     console.log(" latitude: ", lat);
     console.log(" longitude: ", lng);
@@ -63,12 +49,6 @@ const ChooseLocation = (props) => {
     <View style={styles.container}>
       <ScrollView keyboardShouldPersistTaps="handled"
         style={{ flex: 1, backgroundColor: 'white', padding: 20 }}>
-
-        <AddressPickup
-          placeholderText={"Search your pickup location"}
-          fetchAddress={fetchAddressCords}
-        />
-        <View style={{ marginBottom: 16 }} />
         <AddressPickup
           placeholderText={"Search your destination location"}
           fetchAddress={fetchDestinationCords}
